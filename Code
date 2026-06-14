@@ -1,0 +1,149 @@
+import tkinter as tk
+
+genres = {
+    "Hip-Hop": 0,
+    "R&B": 0,
+    "Rock": 0,
+    "Country": 0,
+    "EDM": 0,
+    "Jazz": 0,
+    "Blues": 0,
+    "Reggae": 0,
+    "Afrobeats": 0,
+    "Pop": 0
+}
+
+descriptions = {
+    "Hip-Hop": "You like rhythm, confidence, bass, and lyrical energy.",
+    "R&B": "You like smooth vocals, emotion, and relaxed vibes.",
+    "Rock": "You like guitars, drums, and high-energy music.",
+    "Country": "You like storytelling, acoustic sounds, and real-life lyrics.",
+    "EDM": "You like fast beats, drops, parties, and electronic sounds.",
+    "Jazz": "You like smooth instruments, creativity, and complex music.",
+    "Blues": "You like soulful, emotional, guitar-heavy music.",
+    "Reggae": "You like chill rhythms, island sounds, and relaxed music.",
+    "Afrobeats": "You like danceable rhythms, energy, and global sounds.",
+    "Pop": "You like catchy hooks, clean melodies, and popular sounds."
+}
+
+questions = [
+    {"question": "Do you like heavy bass?", "yes_genres": ["Hip-Hop", "EDM", "Afrobeats"]},
+    {"question": "Do you like emotional vocals?", "yes_genres": ["R&B", "Blues", "Pop"]},
+    {"question": "Do you like guitars?", "yes_genres": ["Rock", "Country", "Blues"]},
+    {"question": "Do you like party music?", "yes_genres": ["EDM", "Hip-Hop", "Afrobeats", "Pop"]},
+    {"question": "Do you like chill relaxing music?", "yes_genres": ["R&B", "Jazz", "Reggae"]},
+    {"question": "Do you like storytelling in songs?", "yes_genres": ["Country", "Hip-Hop", "Blues"]},
+    {"question": "Do you like live instruments?", "yes_genres": ["Jazz", "Rock", "Blues", "Country"]},
+    {"question": "Do you like dance music?", "yes_genres": ["EDM", "Afrobeats", "Pop", "Reggae"]},
+    {"question": "Do you like smooth slow songs?", "yes_genres": ["R&B", "Jazz", "Blues"]},
+    {"question": "Do you like catchy songs?", "yes_genres": ["Pop", "Afrobeats", "Hip-Hop"]},
+    {"question": "Do you like rebellious music?", "yes_genres": ["Rock", "Hip-Hop"]},
+    {"question": "Do you like island-style music?", "yes_genres": ["Reggae", "Afrobeats"]},
+    {"question": "Do you like complex instrumentals?", "yes_genres": ["Jazz", "Rock"]},
+    {"question": "Do you like sad music?", "yes_genres": ["Blues", "R&B", "Country"]},
+    {"question": "Do you like modern popular music?", "yes_genres": ["Pop", "Hip-Hop", "EDM"]}
+]
+
+current_question = 0
+genre_scores = genres.copy()
+
+
+def reset_quiz():
+    global current_question, genre_scores
+    current_question = 0
+    genre_scores = genres.copy()
+    result_label.config(text="")
+    yes_button.config(state="normal")
+    no_button.config(state="normal")
+    show_question()
+
+
+def show_question():
+    if current_question < len(questions):
+        question_label.config(
+            text=f"Question {current_question + 1}/{len(questions)}:\n\n{questions[current_question]['question']}"
+        )
+    else:
+        show_results()
+
+
+def answer_question(answer):
+    global current_question
+
+    if answer == "yes":
+        for genre in questions[current_question]["yes_genres"]:
+            genre_scores[genre] += 1
+
+    current_question += 1
+    show_question()
+
+
+def show_results():
+    yes_button.config(state="disabled")
+    no_button.config(state="disabled")
+
+    sorted_genres = sorted(genre_scores.items(), key=lambda item: item[1], reverse=True)
+    top_three = sorted_genres[:3]
+
+    result_text = "Your Top Music Genres:\n\n"
+
+    for index, (genre, score) in enumerate(top_three, start=1):
+        result_text += f"{index}. {genre} - {score} points\n"
+        result_text += f"   {descriptions[genre]}\n\n"
+
+    question_label.config(text="Quiz Complete!")
+    result_label.config(text=result_text)
+
+    save_results(result_text)
+
+
+def save_results(result_text):
+    with open("genre_results.txt", "w") as file:
+        file.write(result_text)
+
+
+root = tk.Tk()
+root.title("Genre Match")
+root.geometry("550x450")
+
+title_label = tk.Label(root, text="Genre Match", font=("Arial", 22, "bold"))
+title_label.pack(pady=15)
+
+question_label = tk.Label(root, text="", font=("Arial", 14), wraplength=450)
+question_label.pack(pady=20)
+
+button_frame = tk.Frame(root)
+button_frame.pack(pady=10)
+
+yes_button = tk.Button(
+    button_frame,
+    text="Yes",
+    font=("Arial", 12),
+    width=12,
+    command=lambda: answer_question("yes")
+)
+yes_button.grid(row=0, column=0, padx=10)
+
+no_button = tk.Button(
+    button_frame,
+    text="No",
+    font=("Arial", 12),
+    width=12,
+    command=lambda: answer_question("no")
+)
+no_button.grid(row=0, column=1, padx=10)
+
+restart_button = tk.Button(
+    root,
+    text="Restart Quiz",
+    font=("Arial", 12),
+    command=reset_quiz
+)
+restart_button.pack(pady=10)
+
+result_label = tk.Label(root, text="", font=("Arial", 11), wraplength=500, justify="left")
+result_label.pack(pady=15)
+
+show_question()
+
+root.mainloop()
